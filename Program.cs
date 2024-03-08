@@ -55,7 +55,7 @@ namespace Xlsx2Json
                             var target = sheet.Rows[row][col];
                             stringBuilder.AppendLine($"\t\"{key}\":\"{target}\",");
                         }
-
+                        stringBuilder.Remove(stringBuilder.Length - 1, 1);
                         stringBuilder.AppendLine("}");
                         dic.TryAdd(mulLang,stringBuilder);
                     }
