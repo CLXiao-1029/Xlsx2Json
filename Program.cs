@@ -13,11 +13,7 @@ namespace Xlsx2Json
 #endif
             if (args.Length < 2)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"LogError:参数错误");
-                Console.WriteLine($"LogError:程序被迫退出，请修正错误后重试");
-                Console.ForegroundColor = ConsoleColor.White;
-                Environment.Exit(0);
+                LogErrorAndExit("参数错误");
                 return;
             }
             var excelPath = args[0];
@@ -53,9 +49,16 @@ namespace Xlsx2Json
                         {
                             var key = sheet.Rows[row][0].ToString();
                             var target = sheet.Rows[row][col];
-                            stringBuilder.AppendLine($"\t\"{key}\":\"{target}\",");
+                            if (row == rows - 1)
+                            {
+                                stringBuilder.AppendLine($"\t\"{key}\":\"{target}\"");
+                            }
+                            else
+                            {
+                                stringBuilder.AppendLine($"\t\"{key}\":\"{target}\",");
+                            }
                         }
-                        stringBuilder.Remove(stringBuilder.Length - 1, 1);
+                        
                         stringBuilder.AppendLine("}");
                         dic.TryAdd(mulLang,stringBuilder);
                     }
@@ -71,6 +74,8 @@ namespace Xlsx2Json
                             {
                                 Directory.CreateDirectory(dicName);
                             }
+                            
+                            LogInfo($"写出i18n To json：{stringBuilder.Key}");
 
                             StreamWriter writer = new StreamWriter(saveFilePath, false, new UTF8Encoding(false));
                             writer.Write(stringBuilder.Value);
@@ -79,16 +84,45 @@ namespace Xlsx2Json
                         }
                         catch (Exception e)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine($"LogException:{e}");
-                            Console.WriteLine($"LogException:程序被迫退出，请修正错误后重试");
-                            Console.ForegroundColor = ConsoleColor.White;
-                            Environment.Exit(0);
+                            LogException(e);
                         }
                     }
 
                 }
             }
+        }
+
+        public static void LogInfo(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Log($"LogInfo:{message}");
+        }
+
+        public static void LogException(Exception message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Log($"LogException:{message}");
+            Log($"LogException:程序被迫退出，请修正错误后重试");
+            Console.ForegroundColor = ConsoleColor.White;
+            Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// 输出错误信息并在用户按任意键后退出
+        /// </summary>
+        public static void LogErrorAndExit(string errorString)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Log($"LogError:{errorString}");
+            Log($"LogError:程序被迫退出，请修正错误后重试");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.ReadKey();
+            Environment.Exit(0);
+        }
+
+        private static void Log(object message)
+        {
+            Console.WriteLine($"{message} ");
         }
     }
 }
